@@ -1,0 +1,26 @@
+plugins {
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.9'
+    id "com.gradleup.shadow" version "8.3.0"
+}
+
+repositories {
+    mavenCentral()
+}
+
+javafx {
+    version = "21"
+    modules = [ 'javafx.controls' ]
+}
+dependencies {
+    implementation 'org.openjfx:javafx-controls:21.0.7:win'
+    implementation 'com.google.code.gson:gson:2.7'
+}
+mainClassName = 'org.example.Main'
+jar{
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+}
+
+
