@@ -33,17 +33,12 @@ public class Main extends Application {
     public void start(Stage stage) throws IOException {
         stage.setTitle("Game Management System");
 
-
         games = FXCollections.observableArrayList(FileHandler.readGames());
-
-
         filteredGames = new FilteredList<>(games, p -> true);
-
 
         VBox layout = new VBox(10);
         layout.setPadding(new Insets(10));
         layout.setAlignment(Pos.TOP_CENTER);
-
 
         Label gmsTitle = new Label("Game Management System");
         gmsTitle.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2A5058;");
@@ -51,25 +46,21 @@ public class Main extends Application {
         titleHolder.setAlignment(Pos.CENTER_LEFT);
         titleHolder.setPadding(new Insets(0, 0, 10, 5));
 
-
         HBox mainFeatureHolder = new HBox(10);
         mainFeatureHolder.setAlignment(Pos.CENTER_LEFT);
 
         MenuBar menuBar = new MenuBar();
 
-
         Menu fileMenu = new Menu("File");
-
         MenuItem exitItem = new MenuItem("Exit");
         exitItem.setOnAction(e -> stage.close()); // Or Platform.exit();
         fileMenu.getItems().add(exitItem);
-
 
         Menu helpMenu = new Menu("Help");
         MenuItem showManualItem = new MenuItem("Show Manual");
         showManualItem.setOnAction(e -> showHelpManual(stage));
         helpMenu.getItems().add(showManualItem);
-        menuBar.getMenus().addAll(fileMenu,helpMenu);
+        menuBar.getMenus().addAll(fileMenu, helpMenu);
         layout.getChildren().add(menuBar);
 
         Button addButton = new Button("Add");
@@ -77,7 +68,6 @@ public class Main extends Application {
         Button deleteButton = new Button("Delete");
         Button importButton = new Button("Import");
         Button exportButton = new Button("Export");
-
 
         HBox searchBox = new HBox(5);
         searchBox.setAlignment(Pos.CENTER_LEFT);
@@ -92,12 +82,10 @@ public class Main extends Application {
         mainFeatureHolder.getChildren().addAll(addButton, editButton, deleteButton, searchBox, importButton, exportButton);
         HBox.setHgrow(searchBox, Priority.ALWAYS);
 
-
         gameListView = new ListView<>();
         gameListView.setItems(filteredGames);
         gameListView.setFixedCellSize(CELL_HEIGHT);
         gameListView.setCellFactory(param -> new ListCell<Game>() {
-
             private final ImageView imageView = new ImageView();
             private final Label genre = new Label();
             private final Label name = new Label();
@@ -110,7 +98,7 @@ public class Main extends Application {
             private final Label format = new Label();
             private final Label language = new Label();
             private final Label rating = new Label();
-            private final HBox hbox = new HBox(15, imageView, name, developer,genre, publisher,platforms,steamid,releaseYear,playtime,format,language,rating); // 10 = spacing
+            private final HBox hbox = new HBox(15, imageView, name, developer, genre, publisher, platforms, steamid, releaseYear, playtime, format, language, rating); // 10 = spacing
             {
                 imageView.setFitWidth(IMAGE_SIZE);
                 imageView.setFitHeight(IMAGE_SIZE);
@@ -124,7 +112,7 @@ public class Main extends Application {
                 } else {
                     try {
                         FileHandler.ensureCoverPathExists();
-                        imageView.setImage(FileHandler.loadCoverImage(game.getImagePath(),IMAGE_SIZE,IMAGE_SIZE));
+                        imageView.setImage(FileHandler.loadCoverImage(game.getImagePath(), IMAGE_SIZE, IMAGE_SIZE));
                     } catch (Exception e) {
                         imageView.setImage(null); // Shows empty space
                     }
@@ -145,16 +133,12 @@ public class Main extends Application {
         });
         VBox.setVgrow(gameListView, Priority.ALWAYS);
 
-
         layout.getChildren().addAll(titleHolder, mainFeatureHolder, gameListView);
 
-
-
         searchButton.setOnAction(e -> {
-            if(tagsButton.isSelected()){
+            if (tagsButton.isSelected()) {
                 filterByGenre(searchField.getText());
-            }
-            else {
+            } else {
                 filterGames(searchField.getText());
             }
         });
@@ -163,12 +147,9 @@ public class Main extends Application {
             searchField.clear();
         });
 
-
         addButton.setOnAction(e -> handleAddGame(stage));
 
-
         editButton.setOnAction(e -> handleEditGame(stage));
-
 
         deleteButton.setOnAction(e -> handleDeleteGame());
 
@@ -179,7 +160,7 @@ public class Main extends Application {
             if (event.getClickCount() == 2) { // double-click
                 Game selectedGame = gameListView.getSelectionModel().getSelectedItem();
                 if (selectedGame != null) {
-                    showGameDetails(stage,selectedGame);
+                    showGameDetails(stage, selectedGame);
                 }
             }
         });
@@ -189,41 +170,31 @@ public class Main extends Application {
         stage.show();
     }
 
-
     private void filterGames(String searchText) {
         String lowerCaseFilter = searchText == null ? "" : searchText.toLowerCase().trim();
-
         filteredGames.setPredicate(game -> {
-
             if (lowerCaseFilter.isEmpty()) {
                 return true;
             }
-
-
             if (game.getName().toLowerCase().contains(lowerCaseFilter)) {
                 return true;
             } else return game.getDeveloper().toLowerCase().contains(lowerCaseFilter);
         });
     }
-    private void filterByGenre(String searchText){
 
+    private void filterByGenre(String searchText) {
         String lowerCaseFilter = searchText == null ? "" : searchText.toLowerCase().trim();
         filteredGames.setPredicate(game -> {
-
             if (lowerCaseFilter.isEmpty()) {
                 return true;
             }
-
-
             return game.getGenre().toLowerCase().contains(lowerCaseFilter);
         });
     }
 
-
     private void handleAddGame(Stage owner) {
         GameDialog dialog = new GameDialog(owner);
         Optional<Game> result = dialog.showAndWaitForResult();
-
         result.ifPresent(newGame -> {
             try {
                 FileHandler.addGame(newGame);
@@ -244,9 +215,8 @@ public class Main extends Application {
         }
         String tempOldName = selectedGame.getName();
 
-        GameDialog dialog = new GameDialog(owner, selectedGame,false);
+        GameDialog dialog = new GameDialog(owner, selectedGame, false);
         Optional<Game> result = dialog.showAndWaitForResult();
-
         result.ifPresent(editedGame -> {
             try {
                 FileHandler.deleteGame(tempOldName);
@@ -261,7 +231,7 @@ public class Main extends Application {
         });
     }
 
-    private void handleDeleteGame(){
+    private void handleDeleteGame() {
         Game selectedGame = gameListView.getSelectionModel().getSelectedItem();
         if (selectedGame == null) {
             showAlert(Alert.AlertType.WARNING, "No Selection", "Please select a game to delete.");
@@ -275,7 +245,6 @@ public class Main extends Application {
         confirmation.initOwner(gameListView.getScene().getWindow());
 
         Optional<ButtonType> result = confirmation.showAndWait();
-
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
                 FileHandler.deleteGame(selectedGame.getName());
@@ -286,7 +255,6 @@ public class Main extends Application {
         }
     }
 
-
     private void showAlert(Alert.AlertType alertType, String title, String message) {
         Alert alert = new Alert(alertType);
         alert.setTitle(title);
@@ -296,12 +264,11 @@ public class Main extends Application {
         alert.showAndWait();
     }
 
-    private void showGameDetails(Stage owner, Game selectedGame){
-        GameDialog dialog = new GameDialog(owner, selectedGame,true);
+    private void showGameDetails(Stage owner, Game selectedGame) {
+        GameDialog dialog = new GameDialog(owner, selectedGame, true);
         Optional<Game> result = dialog.showAndWaitForResult();
-        result.ifPresent(e-> {
+        result.ifPresent(e -> {
             gameListView.refresh();
-
             gameListView.getSelectionModel().select(e);
         });
     }
@@ -312,16 +279,55 @@ public class Main extends Application {
         helpStage.initModality(Modality.WINDOW_MODAL);
         helpStage.initOwner(stage);
 
-        TextArea helpTextArea = new TextArea("Use Add to add games.\n Click on a game and click Edit to edit its properties.\nDo not choose the same name for 2 seperate games.\nClick on a game and click Delete to delete the game.\nUse the Searchbar to search games by name and developer.\nBy toggling the Tags button, you can instead search by genre (This is very WIP, and in the future you will be able to search by the actual tag properties of the games.)\nThe files are stored in C:\\Users\\YOURUSERNAME\\AppData\\Local\\GameManagementSystem\\games.json\nYou can add cover images into the covers folder found in the same folder, and then edit the image cover name to match the name of the image you want using the Edit button to add cover images.");
-        helpTextArea.setEditable(false);
-        helpTextArea.setWrapText(true);
+        // Enhanced layout with styled VBox
+        VBox helpLayout = new VBox(15);
+        helpLayout.setPadding(new Insets(20));
+        helpLayout.setStyle("-fx-background-color: #f0f4f8; -fx-border-color: #d3e0ea; -fx-border-width: 2; -fx-border-radius: 10;");
 
-        ScrollPane scrollPane = new ScrollPane(helpTextArea);
+        // Title with styling
+        Label titleLabel = new Label("User Manual");
+        titleLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1e3a5f;");
+
+        // Content area with formatted text
+        VBox contentBox = new VBox(10);
+        contentBox.setPadding(new Insets(10));
+        contentBox.setStyle("-fx-background-color: white; -fx-border-color: #e0e8f0; -fx-border-width: 1; -fx-border-radius: 5;");
+
+        Label addLabel = new Label("Adding Games:");
+        addLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c5282;");
+        Label addText = new Label("Use the 'Add' button to add new games.");
+        addText.setWrapText(true);
+
+        Label editLabel = new Label("Editing Games:");
+        editLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c5282;");
+        Label editText = new Label("Click on a game and click 'Edit' to change its properties. Do not use the same name for two separate games.");
+        editText.setWrapText(true);
+
+        Label deleteLabel = new Label("Deleting Games:");
+        deleteLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c5282;");
+        Label deleteText = new Label("Click on a game and click 'Delete' to remove it.");
+        deleteText.setWrapText(true);
+
+        Label searchLabel = new Label("Searching Games:");
+        searchLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c5282;");
+        Label searchText = new Label("Use the search bar to find games by name and developer. Toggle the 'Tags' button to search by genre (this is WIP, with tag-based search coming soon).");
+        searchText.setWrapText(true);
+
+
+
+        Label coverImageLabel = new Label("Cover Images:");
+        coverImageLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c5282;");
+        Label coverImageText = new Label("Add cover images to the 'covers' folder in the same directory, then edit the game to match the image name using the 'Edit' button.");
+        coverImageText.setWrapText(true);
+
+        contentBox.getChildren().addAll(addLabel, addText, editLabel, editText, deleteLabel, deleteText, searchLabel, searchText, coverImageLabel, coverImageText);
+
+        // Scroll pane for content
+        ScrollPane scrollPane = new ScrollPane(contentBox);
         scrollPane.setFitToWidth(true);
-        scrollPane.setFitToHeight(true);
+        scrollPane.setStyle("-fx-background-color: transparent;");
 
-        VBox helpLayout = new VBox(scrollPane);
-        helpLayout.setPadding(new Insets(10));
+        helpLayout.getChildren().addAll(titleLabel, scrollPane);
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
 
         Scene helpScene = new Scene(helpLayout, 500, 400);
@@ -371,5 +377,4 @@ public class Main extends Application {
     public static void main(String[] args) {
         launch(args);
     }
-
 }
