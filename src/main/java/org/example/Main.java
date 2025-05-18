@@ -50,6 +50,7 @@ public class Main extends Application {
 
         HBox mainFeatureHolder = new HBox(10);
         mainFeatureHolder.setAlignment(Pos.CENTER_LEFT);
+        mainFeatureHolder.setPadding(new Insets(0, 10, 0, 0));
 
         MenuBar menuBar = new MenuBar();
 
@@ -80,16 +81,31 @@ public class Main extends Application {
 
         searchBox.getChildren().addAll(new Label("Search:"), searchField, searchButton, clearButton);
         HBox.setHgrow(searchField, Priority.ALWAYS);
-        selectedTagsBox.setAlignment(Pos.CENTER_LEFT);
 
+        // Tags section
+        selectedTagsBox.setAlignment(Pos.CENTER_LEFT);
+        selectedTagsBox.setMaxWidth(200); // Limit the width to prevent overcrowding
         ScrollPane tagsScrollPane = new ScrollPane(selectedTagsBox);
         tagsScrollPane.setFitToHeight(true);
         tagsScrollPane.setPrefViewportHeight(30);
-        tagsScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        tagsScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        tagsScrollPane.setStyle("-fx-background-color: transparent;");
 
-        searchBox.getChildren().addAll( new Label("Tags:"), tagComboBox, tagsScrollPane);
-        mainFeatureHolder.getChildren().addAll(addButton, editButton, deleteButton, searchBox, importButton, exportButton);
-        HBox.setHgrow(searchBox, Priority.ALWAYS);
+        HBox tagsBox = new HBox(5, new Label("Tags:"), tagComboBox, tagsScrollPane);
+        tagsBox.setAlignment(Pos.CENTER_LEFT);
+
+        // Combine search and tags in a vertical box to manage space better
+        VBox searchAndTagsBox = new VBox(5, searchBox, tagsBox);
+        VBox.setVgrow(searchAndTagsBox, Priority.NEVER);
+
+        mainFeatureHolder.getChildren().addAll(addButton, editButton, deleteButton, searchAndTagsBox, importButton, exportButton);
+        HBox.setHgrow(searchAndTagsBox, Priority.ALWAYS);
+        HBox.setHgrow(addButton, Priority.NEVER);
+        HBox.setHgrow(editButton, Priority.NEVER);
+        HBox.setHgrow(deleteButton, Priority.NEVER);
+        HBox.setHgrow(importButton, Priority.NEVER);
+        HBox.setHgrow(exportButton, Priority.NEVER);
+
         tagComboBox.setOnAction(e -> {
             String selectedTag = tagComboBox.getSelectionModel().getSelectedItem();
             if (selectedTag != null && !selectedTags.contains(selectedTag)) {
@@ -99,6 +115,7 @@ public class Main extends Application {
                 tagComboBox.getSelectionModel().clearSelection();
             }
         });
+
         gameListView = new ListView<>();
         gameListView.setItems(filteredGames);
         gameListView.setFixedCellSize(CELL_HEIGHT);
@@ -116,7 +133,7 @@ public class Main extends Application {
             private final Label format = new Label();
             private final Label language = new Label();
             private final Label rating = new Label();
-            private final HBox hbox = new HBox(15, imageView, name, developer, genre, publisher, platforms, steamid, releaseYear, playtime, format, language, rating); // 10 = spacing
+            private final HBox hbox = new HBox(15, imageView, name, developer, genre, publisher, platforms, steamid, releaseYear, playtime, format, language, rating);
             {
                 imageView.setFitWidth(IMAGE_SIZE);
                 imageView.setFitHeight(IMAGE_SIZE);
@@ -132,7 +149,7 @@ public class Main extends Application {
                         FileHandler.ensureCoverPathExists();
                         imageView.setImage(FileHandler.loadCoverImage(game.getImagePath(), IMAGE_SIZE, IMAGE_SIZE));
                     } catch (Exception e) {
-                        imageView.setImage(null); // Shows empty space
+                        imageView.setImage(null);
                     }
                     name.setText(game.getName());
                     developer.setText(game.getDeveloper());
@@ -154,7 +171,7 @@ public class Main extends Application {
         layout.getChildren().addAll(titleHolder, mainFeatureHolder, gameListView);
 
         searchButton.setOnAction(e -> {
-                filterGames(searchField.getText());
+            filterGames(searchField.getText());
         });
 
         clearButton.setOnAction(e -> {
@@ -170,20 +187,21 @@ public class Main extends Application {
         importButton.setOnAction(e -> handleImportGames(stage));
 
         exportButton.setOnAction(e -> handleExportGames(stage));
+
         gameListView.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) { // double-click
+            if (event.getClickCount() == 2) {
                 Game selectedGame = gameListView.getSelectionModel().getSelectedItem();
                 if (selectedGame != null) {
                     showGameDetails(stage, selectedGame);
                 }
             }
         });
+
         updateTagComboBox();
         Scene scene = new Scene(layout, 800, 600);
         stage.setScene(scene);
         stage.show();
     }
-
 
     private void filterGames(String searchText) {
         String lowerCaseFilter = searchText == null ? "" : searchText.toLowerCase().trim();
@@ -199,7 +217,6 @@ public class Main extends Application {
 
     private void filterByGenre(String searchText) {
         String lowerCaseFilter = searchText == null ? "" : searchText.toLowerCase().trim();
-
         filteredGames.setPredicate(game -> {
             if (!selectedTags.isEmpty()) {
                 if (game.getTags() == null || game.getTags().length == 0) {
@@ -354,8 +371,6 @@ public class Main extends Application {
         Label searchText = new Label("Use the search bar to find games by name and developer. Toggle the 'Tags' button to search by genre (this is WIP, with tag-based search coming soon).");
         searchText.setWrapText(true);
 
-
-
         Label coverImageLabel = new Label("Cover Images:");
         coverImageLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c5282;");
         Label coverImageText = new Label("Add cover images to the 'covers' folder in the same directory, then edit the game to match the image name using the 'Edit' button.");
@@ -375,6 +390,7 @@ public class Main extends Application {
         helpStage.setScene(helpScene);
         helpStage.showAndWait();
     }
+
     private void handleImportGames(Stage owner) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Import Games from JSON");
@@ -392,7 +408,6 @@ public class Main extends Application {
                         throw new IllegalArgumentException("Imported games must have at least name and developer fields");
                     }
                 }
-
 
                 int addedCount = 0;
                 for (Game game : importedGames) {
@@ -415,9 +430,11 @@ public class Main extends Application {
             }
         }
     }
+
     private boolean isGameNameDuplicate(String gameName) {
         return games.stream().anyMatch(game -> game.getName().equalsIgnoreCase(gameName));
     }
+
     private void handleExportGames(Stage owner) {
         List<Game> selectedGames = gameListView.getSelectionModel().getSelectedItems();
 
@@ -459,6 +476,7 @@ public class Main extends Application {
             }
         }
     }
+
     private void updateTagComboBox() {
         Set<String> allTags = new HashSet<>();
         for (Game game : games) {
@@ -497,6 +515,7 @@ public class Main extends Application {
             return gameTags.containsAll(selectedTags);
         });
     }
+
     public static void main(String[] args) {
         launch(args);
     }
