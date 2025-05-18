@@ -31,32 +31,43 @@ public class Main extends Application {
     private ComboBox<String> tagComboBox = new ComboBox<>();
     private HBox selectedTagsBox = new HBox(5);
     private ObservableList<String> selectedTags = FXCollections.observableArrayList();
+
     @Override
     public void start(Stage stage) throws IOException {
         stage.setTitle("Game Management System");
 
-        games = FXCollections.observableArrayList(FileHandler.readGames());
+        // Initialize games with error handling
+        try {
+            games = FXCollections.observableArrayList(FileHandler.readGames());
+        } catch (IOException e) {
+            System.err.println("Failed to read games: " + e.getMessage());
+            e.printStackTrace();
+            games = FXCollections.observableArrayList(); // Fallback to empty list
+        }
         filteredGames = new FilteredList<>(games, p -> true);
 
         VBox layout = new VBox(10);
-        layout.setPadding(new Insets(10));
+        layout.setPadding(new Insets(15));
         layout.setAlignment(Pos.TOP_CENTER);
+        layout.setStyle("-fx-background-color: linear-gradient(to bottom right, #e6f0fa, #ffffff);");
 
         Label gmsTitle = new Label("Game Management System");
-        gmsTitle.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2A5058;");
+        gmsTitle.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #1e3a5f; -fx-effect: dropshadow(gaussian, #a3bffa, 10, 0, 0, 0);");
         HBox titleHolder = new HBox(gmsTitle);
         titleHolder.setAlignment(Pos.CENTER_LEFT);
-        titleHolder.setPadding(new Insets(0, 0, 10, 5));
+        titleHolder.setPadding(new Insets(0, 0, 15, 15));
 
-        HBox mainFeatureHolder = new HBox(10);
+        HBox mainFeatureHolder = new HBox(15);
         mainFeatureHolder.setAlignment(Pos.CENTER_LEFT);
-        mainFeatureHolder.setPadding(new Insets(0, 10, 0, 0));
+        mainFeatureHolder.setPadding(new Insets(0, 15, 0, 15));
+        mainFeatureHolder.setStyle("-fx-background-color: rgba(255, 255, 255, 0.8); -fx-border-color: #d3e0ea; -fx-border-width: 1; -fx-border-radius: 5;");
 
         MenuBar menuBar = new MenuBar();
+        menuBar.setStyle("-fx-background-color: #f0f4f8;");
 
         Menu fileMenu = new Menu("File");
         MenuItem exitItem = new MenuItem("Exit");
-        exitItem.setOnAction(e -> stage.close()); // Or Platform.exit();
+        exitItem.setOnAction(e -> stage.close());
         fileMenu.getItems().add(exitItem);
 
         Menu helpMenu = new Menu("Help");
@@ -67,35 +78,41 @@ public class Main extends Application {
         layout.getChildren().add(menuBar);
 
         Button addButton = new Button("Add");
+        styleButton(addButton);
         Button editButton = new Button("Edit");
+        styleButton(editButton);
         Button deleteButton = new Button("Delete");
+        styleButton(deleteButton);
         Button importButton = new Button("Import");
+        styleButton(importButton);
         Button exportButton = new Button("Export");
+        styleButton(exportButton);
 
-        HBox searchBox = new HBox(5);
+        HBox searchBox = new HBox(10);
         searchBox.setAlignment(Pos.CENTER_LEFT);
         searchField = new TextField();
         searchField.setPromptText("Search games...");
+        searchField.setStyle("-fx-background-color: #ffffff; -fx-border-color: #d3e0ea; -fx-border-radius: 5;");
         Button searchButton = new Button("Search");
+        styleButton(searchButton);
         Button clearButton = new Button("Clear");
+        styleButton(clearButton);
 
         searchBox.getChildren().addAll(new Label("Search:"), searchField, searchButton, clearButton);
         HBox.setHgrow(searchField, Priority.ALWAYS);
 
-        // Tags section
         selectedTagsBox.setAlignment(Pos.CENTER_LEFT);
-        selectedTagsBox.setMaxWidth(200); // Limit the width to prevent overcrowding
+        selectedTagsBox.setMaxWidth(200);
         ScrollPane tagsScrollPane = new ScrollPane(selectedTagsBox);
         tagsScrollPane.setFitToHeight(true);
         tagsScrollPane.setPrefViewportHeight(30);
         tagsScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         tagsScrollPane.setStyle("-fx-background-color: transparent;");
 
-        HBox tagsBox = new HBox(5, new Label("Tags:"), tagComboBox, tagsScrollPane);
+        HBox tagsBox = new HBox(10, new Label("Tags:"), tagComboBox, tagsScrollPane);
         tagsBox.setAlignment(Pos.CENTER_LEFT);
 
-        // Combine search and tags in a vertical box to manage space better
-        VBox searchAndTagsBox = new VBox(5, searchBox, tagsBox);
+        VBox searchAndTagsBox = new VBox(10, searchBox, tagsBox);
         VBox.setVgrow(searchAndTagsBox, Priority.NEVER);
 
         mainFeatureHolder.getChildren().addAll(addButton, editButton, deleteButton, searchAndTagsBox, importButton, exportButton);
@@ -199,8 +216,16 @@ public class Main extends Application {
 
         updateTagComboBox();
         Scene scene = new Scene(layout, 800, 600);
+        // Temporarily comment out CSS loading to isolate the issue
+        // scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         stage.setScene(scene);
         stage.show();
+    }
+
+    private void styleButton(Button button) {
+        button.setStyle("-fx-background-color: #4a90e2; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 15; -fx-border-radius: 5; -fx-background-radius: 5;");
+        button.setOnMouseEntered(e -> button.setStyle("-fx-background-color: #357abd; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 15; -fx-border-radius: 5; -fx-background-radius: 5;"));
+        button.setOnMouseExited(e -> button.setStyle("-fx-background-color: #4a90e2; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 15; -fx-border-radius: 5; -fx-background-radius: 5;"));
     }
 
     private void filterGames(String searchText) {
@@ -337,16 +362,13 @@ public class Main extends Application {
         helpStage.initModality(Modality.WINDOW_MODAL);
         helpStage.initOwner(stage);
 
-        // Enhanced layout with styled VBox
         VBox helpLayout = new VBox(15);
         helpLayout.setPadding(new Insets(20));
         helpLayout.setStyle("-fx-background-color: #f0f4f8; -fx-border-color: #d3e0ea; -fx-border-width: 2; -fx-border-radius: 10;");
 
-        // Title with styling
         Label titleLabel = new Label("User Manual");
         titleLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1e3a5f;");
 
-        // Content area with formatted text
         VBox contentBox = new VBox(10);
         contentBox.setPadding(new Insets(10));
         contentBox.setStyle("-fx-background-color: white; -fx-border-color: #e0e8f0; -fx-border-width: 1; -fx-border-radius: 5;");
@@ -378,7 +400,6 @@ public class Main extends Application {
 
         contentBox.getChildren().addAll(addLabel, addText, editLabel, editText, deleteLabel, deleteText, searchLabel, searchText, coverImageLabel, coverImageText);
 
-        // Scroll pane for content
         ScrollPane scrollPane = new ScrollPane(contentBox);
         scrollPane.setFitToWidth(true);
         scrollPane.setStyle("-fx-background-color: transparent;");
@@ -492,6 +513,9 @@ public class Main extends Application {
         selectedTagsBox.getChildren().clear();
         for (String tag : selectedTags) {
             Button tagButton = new Button(tag);
+            tagButton.setStyle("-fx-background-color: #4a90e2; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 2 8; -fx-border-radius: 5; -fx-background-radius: 5;");
+            tagButton.setOnMouseEntered(e -> tagButton.setStyle("-fx-background-color: #357abd; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 2 8; -fx-border-radius: 5; -fx-background-radius: 5;"));
+            tagButton.setOnMouseExited(e -> tagButton.setStyle("-fx-background-color: #4a90e2; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 2 8; -fx-border-radius: 5; -fx-background-radius: 5;"));
             tagButton.setOnAction(e -> {
                 selectedTags.remove(tag);
                 updateSelectedTagsDisplay();

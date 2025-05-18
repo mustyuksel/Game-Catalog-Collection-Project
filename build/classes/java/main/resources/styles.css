@@ -1,0 +1,54 @@
+.root {
+    -fx-font-family: "Arial";
+}
+
+.button {
+    -fx-background-color: #4a90e2;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 5 15;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+.button:hover {
+    -fx-background-color: #357abd;
+}
+
+.menu-bar {
+    -fx-background-color: #f0f4f8;
+}
+
+.menu .label {
+    -fx-text-fill: #1e3a5f;
+}
+
+.menu-item .label {
+    -fx-text-fill: #2c5282;
+}
+
+.menu-item:focused .label {
+    -fx-text-fill: white;
+}
+
+.text-field {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d3e0ea;
+    -fx-border-radius: 5;
+}
+
+.list-view {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d3e0ea;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+}
+
+.list-cell {
+    -fx-padding: 5;
+    -fx-background-color: #f9f9f9;
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: #e6f0fa;
+}
