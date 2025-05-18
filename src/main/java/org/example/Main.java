@@ -19,9 +19,7 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class Main extends Application {
     private static final double CELL_HEIGHT = 80; // Fixed cell height
@@ -30,6 +28,9 @@ public class Main extends Application {
     private FilteredList<Game> filteredGames;
     private ListView<Game> gameListView;
     private TextField searchField;
+    private ComboBox<String> tagComboBox = new ComboBox<>();
+    private HBox selectedTagsBox = new HBox(5);
+    private ObservableList<String> selectedTags = FXCollections.observableArrayList();
     @Override
     public void start(Stage stage) throws IOException {
         stage.setTitle("Game Management System");
@@ -76,16 +77,32 @@ public class Main extends Application {
         searchField.setPromptText("Search games...");
         Button searchButton = new Button("Search");
         Button clearButton = new Button("Clear");
-        ToggleButton tagsButton = new ToggleButton("Tags");
-        searchBox.getChildren().addAll(new Label("Search:"), searchField, searchButton, clearButton, tagsButton);
-        HBox.setHgrow(searchField, Priority.ALWAYS);
 
+        searchBox.getChildren().addAll(new Label("Search:"), searchField, searchButton, clearButton);
+        HBox.setHgrow(searchField, Priority.ALWAYS);
+        selectedTagsBox.setAlignment(Pos.CENTER_LEFT);
+
+        ScrollPane tagsScrollPane = new ScrollPane(selectedTagsBox);
+        tagsScrollPane.setFitToHeight(true);
+        tagsScrollPane.setPrefViewportHeight(30);
+        tagsScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+
+        searchBox.getChildren().addAll( new Label("Tags:"), tagComboBox, tagsScrollPane);
         mainFeatureHolder.getChildren().addAll(addButton, editButton, deleteButton, searchBox, importButton, exportButton);
         HBox.setHgrow(searchBox, Priority.ALWAYS);
-
+        tagComboBox.setOnAction(e -> {
+            String selectedTag = tagComboBox.getSelectionModel().getSelectedItem();
+            if (selectedTag != null && !selectedTags.contains(selectedTag)) {
+                selectedTags.add(selectedTag);
+                updateSelectedTagsDisplay();
+                filterBySelectedTags();
+                tagComboBox.getSelectionModel().clearSelection();
+            }
+        });
         gameListView = new ListView<>();
         gameListView.setItems(filteredGames);
         gameListView.setFixedCellSize(CELL_HEIGHT);
+        gameListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         gameListView.setCellFactory(param -> new ListCell<Game>() {
             private final ImageView imageView = new ImageView();
             private final Label genre = new Label();
@@ -137,11 +154,7 @@ public class Main extends Application {
         layout.getChildren().addAll(titleHolder, mainFeatureHolder, gameListView);
 
         searchButton.setOnAction(e -> {
-            if (tagsButton.isSelected()) {
-                filterByGenre(searchField.getText());
-            } else {
                 filterGames(searchField.getText());
-            }
         });
 
         clearButton.setOnAction(e -> {
@@ -165,7 +178,7 @@ public class Main extends Application {
                 }
             }
         });
-
+        updateTagComboBox();
         Scene scene = new Scene(layout, 800, 600);
         stage.setScene(scene);
         stage.show();
@@ -186,10 +199,22 @@ public class Main extends Application {
 
     private void filterByGenre(String searchText) {
         String lowerCaseFilter = searchText == null ? "" : searchText.toLowerCase().trim();
+
         filteredGames.setPredicate(game -> {
+            if (!selectedTags.isEmpty()) {
+                if (game.getTags() == null || game.getTags().length == 0) {
+                    return false;
+                }
+                List<String> gameTags = Arrays.asList(game.getTags());
+                if (!gameTags.containsAll(selectedTags)) {
+                    return false;
+                }
+            }
+
             if (lowerCaseFilter.isEmpty()) {
                 return true;
             }
+
             return game.getGenre().toLowerCase().contains(lowerCaseFilter);
         });
     }
@@ -211,6 +236,7 @@ public class Main extends Application {
             games.add(newGame);
             gameListView.getSelectionModel().select(newGame);
             gameListView.scrollTo(newGame);
+            updateTagComboBox();
         });
     }
 
@@ -241,6 +267,7 @@ public class Main extends Application {
             games.add(editedGame);
             gameListView.refresh();
             gameListView.getSelectionModel().select(editedGame);
+            updateTagComboBox();
         });
     }
 
@@ -265,6 +292,7 @@ public class Main extends Application {
                 throw new RuntimeException(e);
             }
             games.remove(selectedGame);
+            updateTagComboBox();
         }
     }
 
@@ -377,7 +405,7 @@ public class Main extends Application {
 
                 showAlert(Alert.AlertType.INFORMATION, "Import Successful",
                         String.format("Successfully imported %d/%d games", addedCount, importedGames.size()));
-
+                updateTagComboBox();
             } catch (IOException e) {
                 showAlert(Alert.AlertType.ERROR, "Import Error",
                         "Failed to read the selected file: " + e.getMessage());
@@ -404,14 +432,12 @@ public class Main extends Application {
         fileChooser.getExtensionFilters().add(
                 new FileChooser.ExtensionFilter("JSON Files", "*.json"));
 
-        // Set default file name
         fileChooser.setInitialFileName("games_export.json");
 
         File exportFile = fileChooser.showSaveDialog(owner);
 
         if (exportFile != null) {
             try {
-                // Ensure the file has .json extension
                 String path = exportFile.getPath();
                 if (!path.toLowerCase().endsWith(".json")) {
                     exportFile = new File(path + ".json");
@@ -432,6 +458,44 @@ public class Main extends Application {
                         "Failed to export games: " + e.getMessage());
             }
         }
+    }
+    private void updateTagComboBox() {
+        Set<String> allTags = new HashSet<>();
+        for (Game game : games) {
+            if (game.getTags() != null) {
+                allTags.addAll(Arrays.asList(game.getTags()));
+            }
+        }
+        tagComboBox.getItems().setAll(allTags);
+        tagComboBox.getItems().sort(String::compareToIgnoreCase);
+    }
+
+    private void updateSelectedTagsDisplay() {
+        selectedTagsBox.getChildren().clear();
+        for (String tag : selectedTags) {
+            Button tagButton = new Button(tag);
+            tagButton.setOnAction(e -> {
+                selectedTags.remove(tag);
+                updateSelectedTagsDisplay();
+                filterBySelectedTags();
+            });
+            selectedTagsBox.getChildren().add(tagButton);
+        }
+    }
+
+    private void filterBySelectedTags() {
+        filteredGames.setPredicate(game -> {
+            if (selectedTags.isEmpty()) {
+                return true;
+            }
+
+            if (game.getTags() == null || game.getTags().length == 0) {
+                return false;
+            }
+
+            List<String> gameTags = Arrays.asList(game.getTags());
+            return gameTags.containsAll(selectedTags);
+        });
     }
     public static void main(String[] args) {
         launch(args);
