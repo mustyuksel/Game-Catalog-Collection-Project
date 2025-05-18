@@ -81,4 +81,8 @@ public class FileHandler {
         String json = new String(Files.readAllBytes(importPath));
         return gson.fromJson(json, new TypeToken<List<Game>>(){}.getType());
     }
+    public static void exportGamesToFile(List<Game> gamesToExport, Path exportPath) throws IOException {
+        String json = gson.toJson(gamesToExport);
+        Files.write(exportPath, json.getBytes());
+    }
 }

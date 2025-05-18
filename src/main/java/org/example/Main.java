@@ -19,6 +19,7 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -155,7 +156,7 @@ public class Main extends Application {
 
         importButton.setOnAction(e -> handleImportGames(stage));
 
-
+        exportButton.setOnAction(e -> handleExportGames(stage));
         gameListView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) { // double-click
                 Game selectedGame = gameListView.getSelectionModel().getSelectedItem();
@@ -169,6 +170,7 @@ public class Main extends Application {
         stage.setScene(scene);
         stage.show();
     }
+
 
     private void filterGames(String searchText) {
         String lowerCaseFilter = searchText == null ? "" : searchText.toLowerCase().trim();
@@ -387,6 +389,49 @@ public class Main extends Application {
     }
     private boolean isGameNameDuplicate(String gameName) {
         return games.stream().anyMatch(game -> game.getName().equalsIgnoreCase(gameName));
+    }
+    private void handleExportGames(Stage owner) {
+        List<Game> selectedGames = gameListView.getSelectionModel().getSelectedItems();
+
+        if (selectedGames.isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "No Selection",
+                    "Please select one or more games to export.");
+            return;
+        }
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Export Selected Games");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+
+        // Set default file name
+        fileChooser.setInitialFileName("games_export.json");
+
+        File exportFile = fileChooser.showSaveDialog(owner);
+
+        if (exportFile != null) {
+            try {
+                // Ensure the file has .json extension
+                String path = exportFile.getPath();
+                if (!path.toLowerCase().endsWith(".json")) {
+                    exportFile = new File(path + ".json");
+                }
+
+                FileHandler.exportGamesToFile(
+                        new ArrayList<>(selectedGames),
+                        exportFile.toPath()
+                );
+
+                showAlert(Alert.AlertType.INFORMATION, "Export Successful",
+                        String.format("Successfully exported %d games to:\n%s",
+                                selectedGames.size(),
+                                exportFile.getAbsolutePath()));
+
+            } catch (IOException e) {
+                showAlert(Alert.AlertType.ERROR, "Export Error",
+                        "Failed to export games: " + e.getMessage());
+            }
+        }
     }
     public static void main(String[] args) {
         launch(args);
