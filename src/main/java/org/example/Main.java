@@ -196,6 +196,11 @@ public class Main extends Application {
         GameDialog dialog = new GameDialog(owner);
         Optional<Game> result = dialog.showAndWaitForResult();
         result.ifPresent(newGame -> {
+            if (isGameNameDuplicate(newGame.getName())) {
+                showAlert(Alert.AlertType.ERROR, "Duplicate Game",
+                        "A game with this name already exists. Please choose a different name.");
+                return;
+            }
             try {
                 FileHandler.addGame(newGame);
             } catch (IOException e) {
@@ -219,6 +224,12 @@ public class Main extends Application {
         Optional<Game> result = dialog.showAndWaitForResult();
         result.ifPresent(editedGame -> {
             try {
+                if (!editedGame.getName().equalsIgnoreCase(tempOldName) &&
+                        isGameNameDuplicate(editedGame.getName())) {
+                    showAlert(Alert.AlertType.ERROR, "Duplicate Game",
+                            "A game with this name already exists. Please choose a different name.");
+                    return;
+                }
                 FileHandler.deleteGame(tempOldName);
                 FileHandler.addGame(editedGame);
             } catch (IOException e) {
@@ -373,6 +384,9 @@ public class Main extends Application {
                         "Invalid game data in file: " + e.getMessage());
             }
         }
+    }
+    private boolean isGameNameDuplicate(String gameName) {
+        return games.stream().anyMatch(game -> game.getName().equalsIgnoreCase(gameName));
     }
     public static void main(String[] args) {
         launch(args);
