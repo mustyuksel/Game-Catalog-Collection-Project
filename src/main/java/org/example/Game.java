@@ -76,6 +76,13 @@ public class Game {
 
         return name + " (by " + developer + ")";
     }
-
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Game game = (Game) o;
+        return name.equalsIgnoreCase(game.name) &&
+                developer.equalsIgnoreCase(game.developer);
+    }
 
 }

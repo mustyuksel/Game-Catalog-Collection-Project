@@ -12,11 +12,14 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.List;
 import java.util.Optional;
 
 public class Main extends Application {
@@ -168,6 +171,9 @@ public class Main extends Application {
 
 
         deleteButton.setOnAction(e -> handleDeleteGame());
+
+        importButton.setOnAction(e -> handleImportGames(stage));
+
 
         gameListView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) { // double-click
@@ -322,7 +328,46 @@ public class Main extends Application {
         helpStage.setScene(helpScene);
         helpStage.showAndWait();
     }
+    private void handleImportGames(Stage owner) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Import Games from JSON");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+        File selectedFile = fileChooser.showOpenDialog(owner);
 
+        if (selectedFile != null) {
+            try {
+                List<Game> importedGames = FileHandler.importGamesFromFile(selectedFile.toPath());
+
+                for (Game game : importedGames) {
+                    if (game.getName() == null || game.getName().trim().isEmpty() ||
+                            game.getDeveloper() == null || game.getDeveloper().trim().isEmpty()) {
+                        throw new IllegalArgumentException("Imported games must have at least name and developer fields");
+                    }
+                }
+
+
+                int addedCount = 0;
+                for (Game game : importedGames) {
+                    if (!games.contains(game)) {
+                        FileHandler.addGame(game);
+                        games.add(game);
+                        addedCount++;
+                    }
+                }
+
+                showAlert(Alert.AlertType.INFORMATION, "Import Successful",
+                        String.format("Successfully imported %d/%d games", addedCount, importedGames.size()));
+
+            } catch (IOException e) {
+                showAlert(Alert.AlertType.ERROR, "Import Error",
+                        "Failed to read the selected file: " + e.getMessage());
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Import Error",
+                        "Invalid game data in file: " + e.getMessage());
+            }
+        }
+    }
     public static void main(String[] args) {
         launch(args);
     }

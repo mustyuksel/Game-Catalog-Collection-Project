@@ -76,4 +76,9 @@ public class FileHandler {
         String imagePath = getCoverImagePath(imageName);
         return new Image("file:" + imagePath, width, height, true, true);
     }
+
+    public static List<Game> importGamesFromFile(Path importPath) throws IOException {
+        String json = new String(Files.readAllBytes(importPath));
+        return gson.fromJson(json, new TypeToken<List<Game>>(){}.getType());
+    }
 }
