@@ -9,6 +9,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -29,7 +30,7 @@ public class Main extends Application {
     private ListView<Game> gameListView;
     private TextField searchField;
     private ComboBox<String> tagComboBox = new ComboBox<>();
-    private HBox selectedTagsBox = new HBox(5);
+    private FlowPane selectedTagsBox = new FlowPane();
     private ObservableList<String> selectedTags = FXCollections.observableArrayList();
 
     @Override
@@ -102,11 +103,16 @@ public class Main extends Application {
         HBox.setHgrow(searchField, Priority.ALWAYS);
 
         selectedTagsBox.setAlignment(Pos.CENTER_LEFT);
-        selectedTagsBox.setMaxWidth(200);
+        selectedTagsBox.setHgap(5);
+        selectedTagsBox.setVgap(5);
+        selectedTagsBox.setPadding(new Insets(5));
+        selectedTagsBox.setPrefWrapLength(200);
+
         ScrollPane tagsScrollPane = new ScrollPane(selectedTagsBox);
-        tagsScrollPane.setFitToHeight(true);
-        tagsScrollPane.setPrefViewportHeight(30);
-        tagsScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        tagsScrollPane.setFitToWidth(true);
+        tagsScrollPane.setPrefViewportHeight(50);
+        tagsScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        tagsScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         tagsScrollPane.setStyle("-fx-background-color: transparent;");
 
         HBox tagsBox = new HBox(10, new Label("Tags:"), tagComboBox, tagsScrollPane);
@@ -139,23 +145,31 @@ public class Main extends Application {
         gameListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         gameListView.setCellFactory(param -> new ListCell<Game>() {
             private final ImageView imageView = new ImageView();
-            private final Label genre = new Label();
-            private final Label name = new Label();
-            private final Label developer = new Label();
-            private final Label publisher = new Label();
-            private final Label platforms = new Label();
-            private final Label steamid = new Label();
-            private final Label releaseYear = new Label();
-            private final Label playtime = new Label();
-            private final Label format = new Label();
-            private final Label language = new Label();
-            private final Label rating = new Label();
-            private final HBox hbox = new HBox(15, imageView, name, developer, genre, publisher, platforms, steamid, releaseYear, playtime, format, language, rating);
+            private final Label nameLabel = new Label();
+            private final Label developerLabel = new Label();
+            private final Label genreLabel = new Label();
+            private final Label playtimeLabel = new Label();
+            private final Label ratingLabel = new Label();
+            private final HBox hbox = new HBox(15, imageView, new VBox(5, nameLabel, developerLabel), new VBox(5, genreLabel, playtimeLabel), ratingLabel);
+
             {
                 imageView.setFitWidth(IMAGE_SIZE);
                 imageView.setFitHeight(IMAGE_SIZE);
                 imageView.setPreserveRatio(false);
+
+                // Style the name label to be bigger and bold
+                nameLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+
+                // Style other labels
+                developerLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #555;");
+                genreLabel.setStyle("-fx-font-size: 12px;");
+                playtimeLabel.setStyle("-fx-font-size: 12px;");
+                ratingLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2a5c8d;");
+
+                // Set HBox alignment
+                hbox.setAlignment(Pos.CENTER_LEFT);
             }
+
             @Override
             protected void updateItem(Game game, boolean empty) {
                 super.updateItem(game, empty);
@@ -168,17 +182,13 @@ public class Main extends Application {
                     } catch (Exception e) {
                         imageView.setImage(null);
                     }
-                    name.setText(game.getName());
-                    developer.setText(game.getDeveloper());
-                    publisher.setText(game.getPublisher());
-                    genre.setText(game.getGenre());
-                    platforms.setText(game.getPlatforms());
-                    steamid.setText(game.getSteamid());
-                    releaseYear.setText(game.getReleaseYear());
-                    playtime.setText(game.getPlaytime());
-                    format.setText(game.getFormat());
-                    language.setText(game.getLanguage());
-                    rating.setText(String.valueOf(game.getRating()));
+
+                    nameLabel.setText(game.getName());
+                    developerLabel.setText("by " + game.getDeveloper());
+                    genreLabel.setText("Genre: " + game.getGenre());
+                    playtimeLabel.setText("Playtime: " + game.getPlaytime());
+                    ratingLabel.setText("Rating: " + game.getRating());
+
                     setGraphic(hbox);
                 }
             }
@@ -215,7 +225,7 @@ public class Main extends Application {
         });
 
         updateTagComboBox();
-        Scene scene = new Scene(layout, 800, 600);
+        Scene scene = new Scene(layout, 900, 600);
         // Temporarily comment out CSS loading to isolate the issue
         // scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         stage.setScene(scene);
