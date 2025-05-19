@@ -61,55 +61,55 @@ public class GameDialog extends Stage {
 
         grid.add(new Label("Name:"), 0, 0);
         grid.add(nameField, 1, 0);
-        GridPane.setHgrow(nameField, javafx.scene.layout.Priority.ALWAYS);
+        GridPane.setHgrow(nameField, Priority.ALWAYS);
 
         grid.add(new Label("Developer:"), 0, 1);
         grid.add(developerField, 1, 1);
-        GridPane.setHgrow(developerField, javafx.scene.layout.Priority.ALWAYS);
+        GridPane.setHgrow(developerField, Priority.ALWAYS);
 
         grid.add(new Label("Genre:"), 0, 2);
         grid.add(genreField, 1, 2);
-        GridPane.setHgrow(genreField, javafx.scene.layout.Priority.ALWAYS);
+        GridPane.setHgrow(genreField, Priority.ALWAYS);
 
         grid.add(new Label("Publisher:"), 0, 3);
         grid.add(publisherField, 1, 3);
-        GridPane.setHgrow(publisherField, javafx.scene.layout.Priority.ALWAYS);
+        GridPane.setHgrow(publisherField, Priority.ALWAYS);
 
         grid.add(new Label("Platforms:"), 0, 4);
         grid.add(platformsField, 1, 4);
-        GridPane.setHgrow(platformsField, javafx.scene.layout.Priority.ALWAYS);
+        GridPane.setHgrow(platformsField, Priority.ALWAYS);
 
         grid.add(new Label("SteamID:"), 0, 5);
         grid.add(steamidField, 1, 5);
-        GridPane.setHgrow(steamidField, javafx.scene.layout.Priority.ALWAYS);
+        GridPane.setHgrow(steamidField, Priority.ALWAYS);
 
         grid.add(new Label("Playtime:"), 0, 6);
         grid.add(playtimeField, 1, 6);
-        GridPane.setHgrow(playtimeField, javafx.scene.layout.Priority.ALWAYS);
+        GridPane.setHgrow(playtimeField, Priority.ALWAYS);
 
         grid.add(new Label("Format:"), 0, 7);
         grid.add(formatField, 1, 7);
-        GridPane.setHgrow(formatField, javafx.scene.layout.Priority.ALWAYS);
+        GridPane.setHgrow(formatField, Priority.ALWAYS);
 
         grid.add(new Label("Language:"), 0, 8);
         grid.add(languageField, 1, 8);
-        GridPane.setHgrow(languageField, javafx.scene.layout.Priority.ALWAYS);
+        GridPane.setHgrow(languageField, Priority.ALWAYS);
 
         grid.add(new Label("Rating:"), 0, 9);
         grid.add(ratingField, 1, 9);
-        GridPane.setHgrow(ratingField, javafx.scene.layout.Priority.ALWAYS);
+        GridPane.setHgrow(ratingField, Priority.ALWAYS);
 
         grid.add(new Label("ReleaseYear:"), 0, 10);
         grid.add(releaseYearField, 1, 10);
-        GridPane.setHgrow(releaseYearField, javafx.scene.layout.Priority.ALWAYS);
+        GridPane.setHgrow(releaseYearField, Priority.ALWAYS);
 
         grid.add(new Label("Tags:"), 0, 11);
         grid.add(tagsField, 1, 11);
-        GridPane.setHgrow(tagsField, javafx.scene.layout.Priority.ALWAYS);
+        GridPane.setHgrow(tagsField, Priority.ALWAYS);
 
         grid.add(new Label("Image Cover Name (include file extension):"), 0, 12);
         grid.add(imagePathField, 1, 12);
-        GridPane.setHgrow(imagePathField, javafx.scene.layout.Priority.ALWAYS);
+        GridPane.setHgrow(imagePathField, Priority.ALWAYS);
 
 
         if (gameToEdit != null) {
@@ -187,8 +187,14 @@ public class GameDialog extends Stage {
             alert.showAndWait();
             return;
         }
-        int rating = Integer.parseInt(ratingText);
+        int rating;
         String[] tags = tagsText.isEmpty() ? new String[0] : tagsText.split("\\s*,\\s*");
+        try {
+            rating = Integer.parseInt(ratingText);
+        } catch (NumberFormatException e) {
+            showAlert(Alert.AlertType.ERROR, "Invalid Rating", "Rating must be a valid integer.");
+            return;
+        }
 
 
         if (gameToEdit == null) {
@@ -197,6 +203,14 @@ public class GameDialog extends Stage {
             resultGame = new Game(name, developer,genre,publisher,platform,steamid,releaseYear,playtime,format,language,rating,tags,imageText);
         }
         close();
+    }
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.initOwner(this);
+        alert.showAndWait();
     }
     public void showDetailsOnly() {
         HBox mainContainer = new HBox(20);

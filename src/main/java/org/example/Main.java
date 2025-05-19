@@ -136,10 +136,8 @@ public class Main extends Application {
                 selectedTags.add(selectedTag);
                 updateSelectedTagsDisplay();
                 filterBySelectedTags();
-                tagComboBox.getSelectionModel().clearSelection();
             }
         });
-        updateTagComboBox();
 
         gameListView = new ListView<>();
         gameListView.setItems(filteredGames);
@@ -188,8 +186,8 @@ public class Main extends Application {
                     nameLabel.setText(game.getName());
                     developerLabel.setText("by " + game.getDeveloper());
                     genreLabel.setText("Genre: " + game.getGenre());
-                    playtimeLabel.setText("Playtime: " + game.getPlaytime());
-                    ratingLabel.setText("Rating: " + game.getRating());
+                    playtimeLabel.setText("Playtime: " + game.getPlaytime() + " hours");
+                    ratingLabel.setText("Rating: " + game.getRating() + "%");
 
                     setGraphic(hbox);
                 }
@@ -364,7 +362,7 @@ public class Main extends Application {
 
         Label addLabel = new Label("Adding Games:");
         addLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c5282;");
-        Label addText = new Label("Use the 'Add' button to add new games.");
+        Label addText = new Label("Use the 'Add' button to add new games. Make sure to fill all fields with relevant info. Rating must be an integer, Total playtime is kept track by hours only. The rating is assumed to be the percentage of positive reviews on Steam.");
         addText.setWrapText(true);
 
         Label editLabel = new Label("Editing Games:");
@@ -379,7 +377,7 @@ public class Main extends Application {
 
         Label searchLabel = new Label("Searching Games:");
         searchLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c5282;");
-        Label searchText = new Label("Use the search bar to find games by name and developer. Toggle the 'Tags' button to search by genre (this is WIP, with tag-based search coming soon).");
+        Label searchText = new Label("Use the search bar to find games by name and developer. You can use the Tags dropdown menu to search by tags. You can select multiple and all of the tags you have selected will be shown next to the dropdown window. To remove a tag, click on the tag you want to remove on the right.");
         searchText.setWrapText(true);
 
         Label coverImageLabel = new Label("Cover Images:");
@@ -387,7 +385,12 @@ public class Main extends Application {
         Label coverImageText = new Label("Add cover images to the 'covers' folder in the same directory, then edit the game to match the image name using the 'Edit' button.");
         coverImageText.setWrapText(true);
 
-        contentBox.getChildren().addAll(addLabel, addText, editLabel, editText, deleteLabel, deleteText, searchLabel, searchText, coverImageLabel, coverImageText);
+        Label importExportLabel = new Label("Importing and Exporting:");
+        importExportLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c5282;");
+        Label importExportText = new Label("To export game data, select all of the games you want to export via clicking on the games you want while holding Ctrl key on your keyboard. After the games are selected (the games will be highlighted with blue) press the export button and then select the directory you want to export it to. To import, click the Import button and then select an exported game file. Please do not modify the files outside the program.");
+        importExportText.setWrapText(true);
+
+        contentBox.getChildren().addAll(addLabel, addText, editLabel, editText, deleteLabel, deleteText, searchLabel, searchText, importExportLabel,importExportText, coverImageLabel, coverImageText);
 
         ScrollPane scrollPane = new ScrollPane(contentBox);
         scrollPane.setFitToWidth(true);
@@ -525,6 +528,10 @@ public class Main extends Application {
             }
 
             List<String> gameTags = Arrays.asList(game.getTags());
+            //I DONT KNOW WHAT PLATFORM.RUNLATER DOES BUT IT HELPS WITH AN EXCEPTION
+            Platform.runLater(() -> {
+                tagComboBox.getSelectionModel().clearSelection();
+            });
             return gameTags.containsAll(selectedTags);
         });
     }
