@@ -4,9 +4,12 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -196,15 +199,14 @@ public class GameDialog extends Stage {
         close();
     }
     public void showDetailsOnly() {
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setFitToWidth(true);
-        scrollPane.setPadding(new Insets(10));
+        HBox mainContainer = new HBox(20);
+        mainContainer.setPadding(new Insets(15));
 
+        // Left side details
         GridPane detailsGrid = new GridPane();
         detailsGrid.setAlignment(Pos.TOP_LEFT);
         detailsGrid.setHgap(10);
         detailsGrid.setVgap(10);
-        detailsGrid.setPadding(new Insets(15));
 
         detailsGrid.add(createDetailRow("Name:", nameField.getText()), 0, 0);
         detailsGrid.add(createDetailRow("Developer:", developerField.getText()), 0, 1);
@@ -218,11 +220,32 @@ public class GameDialog extends Stage {
         detailsGrid.add(createDetailRow("Language:", languageField.getText()), 0, 9);
         detailsGrid.add(createDetailRow("Rating:", ratingField.getText()), 0, 10);
         detailsGrid.add(createDetailRow("Tags:", tagsField.getText()), 0, 11);
-        detailsGrid.add(createDetailRow("Image Path:", imagePathField.getText()), 0, 12);
 
-        scrollPane.setContent(detailsGrid);
+        // Right side Cover Image
+        ImageView coverImage = new ImageView();
+        coverImage.setPreserveRatio(true);
+        coverImage.setFitWidth(200); // Fixed width, height will maintain aspect ratio
 
-        Scene detailsScene = new Scene(scrollPane, 500, 400);
+        try {
+            if (imagePathField.getText() != null && !imagePathField.getText().isEmpty()) {
+                Image image = FileHandler.loadCoverImage(imagePathField.getText(), 200, 200);
+                coverImage.setImage(image);
+            }
+        } catch (Exception e) {
+            // If image fails to load, just leave it empty
+        }
+
+        ScrollPane scrollPane = new ScrollPane(detailsGrid);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPadding(new Insets(5));
+
+        VBox imageContainer = new VBox(coverImage);
+        imageContainer.setAlignment(Pos.TOP_CENTER);
+        imageContainer.setPadding(new Insets(5));
+
+        mainContainer.getChildren().addAll(scrollPane, imageContainer);
+
+        Scene detailsScene = new Scene(mainContainer, 700, 500); // Slightly larger window
         setScene(detailsScene);
         setTitle("Game Details - " + nameField.getText());
         sizeToScene();
