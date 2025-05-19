@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -194,7 +195,52 @@ public class GameDialog extends Stage {
         }
         close();
     }
+    public void showDetailsOnly() {
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPadding(new Insets(10));
 
+        GridPane detailsGrid = new GridPane();
+        detailsGrid.setAlignment(Pos.TOP_LEFT);
+        detailsGrid.setHgap(10);
+        detailsGrid.setVgap(10);
+        detailsGrid.setPadding(new Insets(15));
+
+        detailsGrid.add(createDetailRow("Name:", nameField.getText()), 0, 0);
+        detailsGrid.add(createDetailRow("Developer:", developerField.getText()), 0, 1);
+        detailsGrid.add(createDetailRow("Genre:", genreField.getText()), 0, 2);
+        detailsGrid.add(createDetailRow("Publisher:", publisherField.getText()), 0, 3);
+        detailsGrid.add(createDetailRow("Platforms:", platformsField.getText()), 0, 4);
+        detailsGrid.add(createDetailRow("SteamID:", steamidField.getText()), 0, 5);
+        detailsGrid.add(createDetailRow("Release Year:", releaseYearField.getText()), 0, 6);
+        detailsGrid.add(createDetailRow("Playtime:", playtimeField.getText()), 0, 7);
+        detailsGrid.add(createDetailRow("Format:", formatField.getText()), 0, 8);
+        detailsGrid.add(createDetailRow("Language:", languageField.getText()), 0, 9);
+        detailsGrid.add(createDetailRow("Rating:", ratingField.getText()), 0, 10);
+        detailsGrid.add(createDetailRow("Tags:", tagsField.getText()), 0, 11);
+        detailsGrid.add(createDetailRow("Image Path:", imagePathField.getText()), 0, 12);
+
+        scrollPane.setContent(detailsGrid);
+
+        Scene detailsScene = new Scene(scrollPane, 500, 400);
+        setScene(detailsScene);
+        setTitle("Game Details - " + nameField.getText());
+        sizeToScene();
+    }
+    private HBox createDetailRow(String labelText, String valueText) {
+        Label label = new Label(labelText);
+        label.setStyle("-fx-font-weight: bold; -fx-min-width: 100;");
+
+        Label value = new Label(valueText);
+        value.setStyle("-fx-wrap-text: true;");
+        value.setMaxWidth(Double.MAX_VALUE);
+
+        HBox row = new HBox(10, label, value);
+        row.setAlignment(Pos.BASELINE_LEFT);
+        HBox.setHgrow(value, Priority.ALWAYS);
+
+        return row;
+    }
 
     public Optional<Game> showAndWaitForResult() {
         showAndWait();

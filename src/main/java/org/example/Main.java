@@ -360,11 +360,8 @@ public class Main extends Application {
 
     private void showGameDetails(Stage owner, Game selectedGame) {
         GameDialog dialog = new GameDialog(owner, selectedGame, true);
-        Optional<Game> result = dialog.showAndWaitForResult();
-        result.ifPresent(e -> {
-            gameListView.refresh();
-            gameListView.getSelectionModel().select(e);
-        });
+        dialog.showDetailsOnly();
+        dialog.showAndWait();
     }
 
     private void showHelpManual(Stage stage) {
