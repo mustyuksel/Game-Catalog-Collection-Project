@@ -135,11 +135,11 @@ public class Main extends Application {
             if (selectedTag != null && !selectedTags.contains(selectedTag)) {
                 selectedTags.add(selectedTag);
                 updateSelectedTagsDisplay();
-
-                Platform.runLater(() -> filterBySelectedTags());
+                filterBySelectedTags();
+                tagComboBox.getSelectionModel().clearSelection();
             }
-            tagComboBox.getSelectionModel().clearSelection();
         });
+        updateTagComboBox();
 
         gameListView = new ListView<>();
         gameListView.setItems(filteredGames);
@@ -249,27 +249,6 @@ public class Main extends Application {
             if (game.getName().toLowerCase().contains(lowerCaseFilter)) {
                 return true;
             } else return game.getDeveloper().toLowerCase().contains(lowerCaseFilter);
-        });
-    }
-
-    private void filterByGenre(String searchText) {
-        String lowerCaseFilter = searchText == null ? "" : searchText.toLowerCase().trim();
-        filteredGames.setPredicate(game -> {
-            if (!selectedTags.isEmpty()) {
-                if (game.getTags() == null || game.getTags().length == 0) {
-                    return false;
-                }
-                List<String> gameTags = Arrays.asList(game.getTags());
-                if (!gameTags.containsAll(selectedTags)) {
-                    return false;
-                }
-            }
-
-            if (lowerCaseFilter.isEmpty()) {
-                return true;
-            }
-
-            return game.getGenre().toLowerCase().contains(lowerCaseFilter);
         });
     }
 
@@ -523,37 +502,30 @@ public class Main extends Application {
         selectedTagsBox.getChildren().clear();
         for (String tag : selectedTags) {
             Button tagButton = new Button(tag);
-            tagButton.setStyle("-fx-background-color: #4a90e2; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 2 8;");
+            tagButton.setStyle("-fx-background-color: #4a90e2; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 2 8; -fx-border-radius: 5; -fx-background-radius: 5;");
+            tagButton.setOnMouseEntered(e -> tagButton.setStyle("-fx-background-color: #357abd; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 2 8; -fx-border-radius: 5; -fx-background-radius: 5;"));
+            tagButton.setOnMouseExited(e -> tagButton.setStyle("-fx-background-color: #4a90e2; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 2 8; -fx-border-radius: 5; -fx-background-radius: 5;"));
             tagButton.setOnAction(e -> {
                 selectedTags.remove(tag);
-                Platform.runLater(() -> filterBySelectedTags());
+                updateSelectedTagsDisplay();
+                filterBySelectedTags();
             });
             selectedTagsBox.getChildren().add(tagButton);
         }
     }
 
     private void filterBySelectedTags() {
-
-        List<Game> currentSelection = new ArrayList<>(gameListView.getSelectionModel().getSelectedItems());
-
         filteredGames.setPredicate(game -> {
-            if (game == null) return false;
-            if (selectedTags.isEmpty()) return true;
-
-            String[] tags = game.getTags();
-            if (tags == null || tags.length == 0) return false;
-
-            return Arrays.asList(tags).containsAll(selectedTags);
-        });
-
-        Platform.runLater(() -> {
-            gameListView.getSelectionModel().clearSelection();
-            for (Game game : currentSelection) {
-                int index = filteredGames.indexOf(game);
-                if (index >= 0) {
-                    gameListView.getSelectionModel().select(index);
-                }
+            if (selectedTags.isEmpty()) {
+                return true;
             }
+
+            if (game.getTags() == null || game.getTags().length == 0) {
+                return false;
+            }
+
+            List<String> gameTags = Arrays.asList(game.getTags());
+            return gameTags.containsAll(selectedTags);
         });
     }
 
