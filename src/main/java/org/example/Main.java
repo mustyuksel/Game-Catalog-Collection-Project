@@ -304,6 +304,7 @@ public class Main extends Application {
         Optional<Game> result = dialog.showAndWaitForResult();
         result.ifPresent(editedGame -> {
             try {
+                // Only check for duplicate if the name was changed
                 if (!editedGame.getName().equalsIgnoreCase(tempOldName) &&
                         isGameNameDuplicate(editedGame.getName())) {
                     showAlert(Alert.AlertType.ERROR, "Duplicate Game",
